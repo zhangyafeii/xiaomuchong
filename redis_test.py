@@ -23,7 +23,7 @@ print(conn.keys())
 # 查看是否是集合成员
 # print(conn.sismember('team:dupefilter', '9ff5702d6a40f5949a1dbd79955f999268c38761'))
 # 删除键
-conn.delete('posts:dupefilter')
+# conn.delete('posts:dupefilter')
 
 # conn.delete('posts:error')
 # conn.delete('team:dupefilter')
