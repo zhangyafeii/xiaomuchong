@@ -103,6 +103,8 @@ if __name__ == '__main__':
     # print(res)
     db2 = pandas_db_helper()
     # data = pd.read_sql_table("team", con=db2, index_col="board_id")
-    data = pd.read_sql(sql="select board_name, board_id from team", con=db_conn)
-    name, url = data['board_name'], data['board_id']
+    # data = pd.read_sql(sql="select board_name, board_id from team", con=db_conn)
+    # name, url = data['board_name'], data['board_id']
     # data = pd.read_sql(sql="select post_url from posts", con=db_conn)
+    data = pd.read_sql(sql="posts", con=db_conn, columns=["post_url"])
+    print(data['post_url'])

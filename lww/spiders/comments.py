@@ -1,35 +1,50 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from lww.items import LwwItemLoader, LwwCommentItem
-from lww.DBHelper import db_conn
+from lww.DBHelper import db_conn, redis_conn
 import pandas as pd
+
+
+def get_start_urls():
+    data = pd.read_sql(sql="posts", con=db_conn, columns=["post_url"])
+    post_urls = data['post_url']
+    callback = 'parse'
+    if not redis_conn.exists("posts_urls"):
+        for url in post_urls:
+            redis_conn.sadd("posts_urls", url)
+    elif redis_conn.scard("posts_urls") == redis_conn.scard("posts_visit_urls"):
+        post_urls = redis_conn.smembers("posts_page_urls")
+        post_urls = [url.decode() for url in post_urls]
+        callback = 'parse_detail'
+    else:
+        post_urls = redis_conn.sdiff('posts_urls', 'posts_visit_urls')
+        post_urls = [url.decode() for url in post_urls]
+    return post_urls, callback
 
 
 class CommentsSpider(scrapy.Spider):
     name = 'comments'
     allowed_domains = ['muchong.com']
     # start_urls = ['http://muchong.com/t-13667321-1']
-
-    @staticmethod
-    def get_start_urls(self):
-        data = pd.read_sql(sql="posts", con=db_conn, columns=["post_url"])
-        return data['post_url']
+    # start_urls = get_start_urls()
 
     def start_requests(self):
         # url需要从数据库中提取
-        for url in self.get_start_urls():
-            yield scrapy.Request(url=url, callback=self.parse)
+        start_urls, callback = get_start_urls()
+        callback = self.parse if callback == 'parse' else self.parse_detail
+        for url in start_urls:
+            yield scrapy.Request(url=url, callback=callback)
 
     def parse(self, response):
-        """ 评论表 """
+        """ 评论表将获取所有帖子page_url并存入redis """
+        redis_conn.sadd('posts_visit_urls', response.url)
         request_url = response.url[:-1]
-        comment_nums = response.xpath('//div[@class="xmc_fr xmc_Pages"]//td[1]/text()')[0].extract()
-        page_num = int(comment_nums) // 100 + 1
-        if page_num > 1:
-            for page in range(1, int(page_num) + 1):
-                yield scrapy.Request(url=f'{request_url}{page}', callback=self.parse_detail)
+        page_nums = int(response.xpath('//div[@class="xmc_fr xmc_Pages"]//td[2]/text()').extract_first().split('/')[1])
+        if page_nums > 1:
+            for page in range(1, int(page_nums) + 1):
+                redis_conn.sadd('posts_page_urls', request_url + str(page))
         else:
-            yield scrapy.Request(url=response.url, callback=self.parse_detail)
+            redis_conn.sadd('posts_page_urls', response.url)
 
     def parse_detail(self, response):
         tbodys = response.xpath('//tbody[starts-with(@id, "pid")]')
@@ -49,7 +64,7 @@ class CommentsSpider(scrapy.Spider):
                 item_loader.add_xpath("praise_num", f'string(//*[@id="qtop_{n}_{n}"]/a)')
             else:
                 item_loader.add_value("praise_num", 0)
-            if tbody.xpath('tr/td[@class="pls_foot"]/div/span/a/text()') == "1":
+            if '1楼' in tbody.xpath('tr/td[@class="pls_foot"]/div/span/a/text()').extract_first():
                 item_loader.add_value("isTopic", 1)
             else:
                 item_loader.add_value("isTopic", 0)

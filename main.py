@@ -18,6 +18,6 @@ def run(job):
 if __name__ == '__main__':
     # run(job="team")
     # run(job="charmer")
-    run(job="posts")
-    # run(job="comments")
+    # run(job="posts")
+    run(job="comments")
     # run(job="users")

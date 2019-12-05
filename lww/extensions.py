@@ -24,12 +24,14 @@ class MyExtension(object):
     def response_received(self, response, request, spider):
         if response.status != 200:
             self.logger.warning(f"{request.url, response.status} 该请求返回也页面不正确, 忽略此请求")
+            # return request
             raise IgnoreRequest()
         else:
             fd = request_fingerprint(request=request)
             self.conn.sadd(settings.SCHEDULER_DUPEFILTER_KEY % {'spider': spider.name}, fd)
 
     def spider_error(self, failure, response, spider):
+        print(response.url, failure)
         self.conn.sadd(f"{spider.name}:error", response.url)
-        spider.crawler.engine.close_spider(spider, f"{response.url, failure}")
+        spider.crawler.engine.close_spider(spider)
 

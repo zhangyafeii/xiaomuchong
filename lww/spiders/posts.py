@@ -7,19 +7,21 @@ from lww import settings
 class PostsSpider(scrapy.Spider):
     name = 'posts'
     allowed_domains = ['muchong.com']
-    # start_urls = [f'http://muchong.com/f-189-{n}' for n in range(1, 201)]
-    start_urls = ['http://muchong.com/f-189-21']
+    start_urls = [f'http://muchong.com/f-189-{n}' for n in range(1, 201)]
+    # start_urls = ['http://muchong.com/f-189-21']
 
+    # @staticmethod
+    # def get_start_urls():
+    #     """ 获取起始url """
+    #     for board_url in settings.BOARD_MAP:
+    #         yield [f'{board_url}-{page}' for page in range(1, 201)]
 
-    @staticmethod
-    def get_start_urls():
-        for board_url in settings.BOARD_MAP:
-            yield (f'{board_url}-{page}' for page in range(1, 201))
-
-    # def start_requests(self):
-    #     for urls in self.get_start_urls():
-    #         for url in urls:
-    #             yield scrapy.Request(url=url, callback=self.parse)
+    def start_requests(self):
+        """ 将起始url加入请求队列 """
+        # for urls in self.get_start_urls():
+        for urls in self.start_urls:
+            for url in urls:
+                yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
         posts_list = response.xpath('//tr[@class="forum_list"]')[1:]

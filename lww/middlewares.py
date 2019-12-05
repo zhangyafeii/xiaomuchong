@@ -82,7 +82,6 @@ class LwwDownloaderMiddleware(object):
         return None
 
     def process_response(self, request, response, spider):
-        print(response.url)
         if response.status != 200 or not self.judge_request_response(response, spider):
             self.logger.warning(f"{request.url, response.status} 该请求返回也页面不正确, 忽略此请求")
             raise IgnoreRequest()
@@ -99,14 +98,14 @@ class LwwDownloaderMiddleware(object):
             return False
         elif spider.name == 'post' and not response.xpath('//tr[@class="forum_list"]'):
             return False
-        elif spider.name == 'comments' and not response.xpath("response.xpath('//tbody[starts-with(@id, 'pid')]"):
+        elif spider.name == 'comments' and not response.xpath("//tbody[starts-with(@id, 'pid')]"):
             return False
         elif spider.name == 'users' and not response.xpath('//div[@class="space_index "]//tr/td[2]/div/a/text()'):
             return False
         return True
 
     def process_exception(self, request, exception, spider):
-        pass
+        print(request.url, exception)
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
