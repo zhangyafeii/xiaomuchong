@@ -6,8 +6,8 @@
 from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 from scrapy.utils.request import request_fingerprint
-from lww.DBHelper import redis_conn
-from lww import settings
+from xiaomuchong.DBHelper import redis_conn
+from xiaomuchong import settings
 
 
 class MyExtension(object):

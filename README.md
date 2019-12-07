@@ -8,7 +8,7 @@ pipenv shell
 ```
 ![激活虚拟环境](image/激活虚拟环境.png)
 - 2.使用本地环境
-```angular2
+```python
 pip install -r requirements.txt
 ```
 ![安装项目依赖](image/安装项目依赖.png)
@@ -47,7 +47,7 @@ CREATE DATABASE xiaomuchong
 - 
 CREATE TABLE public.team
 (
-    board_id bigint NOT NULL,
+    board_id int NOT NULL,
     board_name character varying COLLATE pg_catalog."default",
     header_name character varying COLLATE pg_catalog."default",
     header_url character varying COLLATE pg_catalog."default",
@@ -58,7 +58,7 @@ CREATE TABLE public.team
 )
 CREATE TABLE public.charmer
 (
-    board_id bigint NOT NULL,
+    board_id int NOT NULL,
     board_name character varying COLLATE pg_catalog."default",
     charmer_name character varying COLLATE pg_catalog."default",
     charmer_url character varying COLLATE pg_catalog."default" NOT NULL,
@@ -68,20 +68,20 @@ CREATE TABLE public.charmer
 
 CREATE TABLE public.posts
 (
-    board_id bigint NOT NULL,
+    board_id int NOT NULL,
     board_name character varying COLLATE pg_catalog."default",
     board_url character varying COLLATE pg_catalog."default",
     tag character varying COLLATE pg_catalog."default",
     title character varying COLLATE pg_catalog."default",
     post_url character varying COLLATE pg_catalog."default" NOT NULL,
-    comment_num bigint,
-    browser_num bigint,
+    comment_num int,
+    browser_num int,
     author_name character varying COLLATE pg_catalog."default",
     author_url character varying COLLATE pg_catalog."default",
     post_time date,
     last_comment_user character varying COLLATE pg_catalog."default",
     last_comment_time timestamp without time zone,
-    coin_num bigint,
+    coin_num int,
     CONSTRAINT posts_pkey PRIMARY KEY (post_url)
 )
 create table comment
@@ -98,33 +98,33 @@ create table comment
     constraint pk_nameprimary
         primary key (post_url, floor)
 );
-create table "user"
+create table users
 (
     user_name        varchar,
     user_url         varchar not null
-        constraint user_pk
-            primary key,
+        constraint users_pk primary key,
     listener         varchar,
-    red_flower       bigint,
-    register_time    time,
-    last_active_time time,
-    last_post_time   time,
-    serial_num       bigint,
-    "group"          varchar,
-    help             bigint,
-    vip              bigint,
-    gold             bigint,
-    spend            bigint,
-    soft             bigint,
-    posts            bigint,
+    red_flower       int,
+    register_time    timestamp without time zone,
+    last_active_time timestamp without time zone,
+    last_post_time   timestamp without time zone,
+    serial_num       int,
+    user_group       varchar,
+    help             int,
+    vip              real,
+    gold             real,
+    spend            int,
+    soft             int,
+    posts            int,
     rule             varchar,
     online           varchar,
     online_status    varchar,
     major            varchar,
     gender           varchar,
     region           varchar,
-    birthday         time
+    birthday         varchar
 );
+
 
 ```
 > - scrapy_redis的配置
@@ -187,5 +187,15 @@ scrapy crawl spider_name   # 爬虫名称 team|charmer|posts|comments|users
 ```
 ![执行命令](image/执行命令.png)
 - 前三个爬虫可以直接运行，commments和users的urls需要从数据库中抽取，所以需要等到posts下载完
+- team表
+![team表](image/team表.png)
+- charmer表
+![charmer表](image/charmer表.png)
+- posts表
+![posts表](image/posts表.png)
+- comment表
+![coment表](image/comment表.png)
+- users表
+![users表](image/users表.png)
 
 

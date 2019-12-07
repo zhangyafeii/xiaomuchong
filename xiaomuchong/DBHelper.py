@@ -8,7 +8,7 @@ from redis import ConnectionPool, Redis
 from scrapy.utils.project import get_project_settings
 from DBUtils.PooledDB import PooledDB
 import psycopg2
-from lww import settings
+from xiaomuchong import settings
 from sqlalchemy import create_engine
 
 

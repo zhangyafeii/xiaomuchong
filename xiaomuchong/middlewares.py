@@ -9,7 +9,7 @@ from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 from scrapy.utils.request import request_fingerprint
 from scrapy.utils.project import get_project_settings
-from lww.DBHelper import redis_conn
+from xiaomuchong.DBHelper import redis_conn
 import logging
 
 settings = get_project_settings()
@@ -83,8 +83,10 @@ class LwwDownloaderMiddleware(object):
 
     def process_response(self, request, response, spider):
         if response.status != 200 or not self.judge_request_response(response, spider):
-            self.logger.warning(f"{request.url, response.status} 该请求返回也页面不正确, 忽略此请求")
-            raise IgnoreRequest()
+            # self.logger.warning(f"{request.url, response.status} 该请求返回也页面不正确, 忽略此请求")
+            # raise IgnoreRequest()
+            self.logger.warning(f"{request.url, response.status} 该请求返回也页面不正确, 继续请求")
+            return request
         else:
             fd = request_fingerprint(request=request)
             self.conn.sadd(settings["SCHEDULER_DUPEFILTER_KEY"] % {'spider': spider.name}, fd)

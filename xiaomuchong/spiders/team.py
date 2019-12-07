@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapy.http.response import Response
-from lww.items import LwwTeamItem, LwwItemLoader
-from lww import settings
+from xiaomuchong.items import LwwTeamItem, LwwItemLoader
+from xiaomuchong import settings
 
 
 class TeamSpider(scrapy.Spider):

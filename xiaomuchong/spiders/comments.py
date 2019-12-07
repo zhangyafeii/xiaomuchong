@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from lww.items import LwwItemLoader, LwwCommentItem
-from lww.DBHelper import db_conn, redis_conn
+from xiaomuchong.items import LwwItemLoader, LwwCommentItem
+from xiaomuchong.DBHelper import db_conn, redis_conn
 import pandas as pd
 
 
@@ -9,17 +9,21 @@ def get_start_urls():
     data = pd.read_sql(sql="posts", con=db_conn, columns=["post_url"])
     post_urls = data['post_url']
     callback = 'parse'
-    if not redis_conn.exists("posts_urls"):
-        for url in post_urls:
-            redis_conn.sadd("posts_urls", url)
-    elif redis_conn.scard("posts_urls") == redis_conn.scard("posts_visit_urls"):
-        post_urls = redis_conn.smembers("posts_page_urls")
+    if len(post_urls) == redis_conn.scard('comments:dupefilter'):
+        redis_conn.delete('comments:dupefilter')
+        post_urls = redis_conn.smembers('posts_page_urls')
+        callback = 'parse_detail'
+    elif len(post_urls) < redis_conn.scard('comments:dupefilter'):
+        post_urls = redis_conn.smembers('posts_page_urls')
         post_urls = [url.decode() for url in post_urls]
         callback = 'parse_detail'
-    else:
-        post_urls = redis_conn.sdiff('posts_urls', 'posts_visit_urls')
-        post_urls = [url.decode() for url in post_urls]
     return post_urls, callback
+
+# def get_start_urls():
+#     post_urls = redis_conn.smembers('posts_page_urls')
+#     post_urls = [url.decode() for url in post_urls]
+#     callback = 'parse_detail'
+#     return post_urls, callback
 
 
 class CommentsSpider(scrapy.Spider):
@@ -37,7 +41,6 @@ class CommentsSpider(scrapy.Spider):
 
     def parse(self, response):
         """ 评论表将获取所有帖子page_url并存入redis """
-        redis_conn.sadd('posts_visit_urls', response.url)
         request_url = response.url[:-1]
         page_nums = int(response.xpath('//div[@class="xmc_fr xmc_Pages"]//td[2]/text()').extract_first().split('/')[1])
         if page_nums > 1:

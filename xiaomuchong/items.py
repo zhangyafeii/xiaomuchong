@@ -3,12 +3,19 @@ import datetime
 import re
 import scrapy
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose,Join
+from scrapy.loader.processors import TakeFirst, MapCompose, Join
 from urllib.parse import urljoin
+
+
+class TakeFirstCustom(TakeFirst):
+    def __call__(self, values):
+        for value in values:
+            return value
 
 
 class LwwItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    # default_output_processor = TakeFirstCustom()
 
 
 def date_convert(value):
@@ -46,7 +53,7 @@ class LwwTeamItem(scrapy.Item):
         input_processor=MapCompose(url_bbs_join),
         output_processor=Join('||'),
     )
-    moderator = scrapy.Field(input_processor=Join(' | '),)
+    moderator = scrapy.Field(input_processor=Join(' | '), )
     moderator_url = scrapy.Field(input_processor=MapCompose(url_bbs_join), output_processor=Join('||'))
     attendance = scrapy.Field()
 
@@ -55,7 +62,8 @@ class LwwTeamItem(scrapy.Item):
             insert into team(board_id, board_name, header_name, header_url, moderator, moderator_url, attendance)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        params = (self['board_id'], self["board_name"], self["header_name"], self["header_url"], self["moderator"], self["moderator_url"], self["attendance"])
+        params = (self['board_id'], self["board_name"], self["header_name"], self["header_url"], self["moderator"],
+                  self["moderator_url"], self["attendance"])
         return insert_sql, params
 
 
@@ -65,7 +73,7 @@ class LwwCharmerItem(scrapy.Item):
     board_name = scrapy.Field()
     charmer_name = scrapy.Field()
     effect_index = scrapy.Field()
-    charmer_url = scrapy.Field(output_processor=url_join)
+    charmer_url = scrapy.Field(output_processor=url_bbs_join)
 
     def get_insert_sql(self):
         insert_sql = """
@@ -117,8 +125,10 @@ class LwwPostItem(scrapy.Item):
             author_name, author_url, post_time, last_comment_user, last_comment_time)
             VALUES (%s, %s, %s, %s,%s, %s, %s, %s, %s, %s,%s,%s,%s,%s)
         """
-        params = (self['board_id'], self['board_name'], self['board_url'], self['tag'], self['title'], self['post_url'], self['coin_num'],self['comment_num'], self['browser_num'],
-                  self['author_name'], self['author_url'], self['post_time'], self['last_comment_user'], self['last_comment_time'])
+        params = (self['board_id'], self['board_name'], self['board_url'], self['tag'], self['title'], self['post_url'],
+                  self['coin_num'], self['comment_num'], self['browser_num'],
+                  self['author_name'], self['author_url'], self['post_time'], self['last_comment_user'],
+                  self['last_comment_time'])
         return insert_sql, params
 
 
@@ -134,32 +144,32 @@ def get_praise_num(value):
 
 class LwwCommentItem(scrapy.Item):
     """ comment 表 """
-    post_url = scrapy.Field()       # 主题帖url
-    author_name = scrapy.Field()    # 作者姓名
-    author_url = scrapy.Field(input_processor=url_join)     # 作者url
-    post_time = scrapy.Field(output_processor=datetime_convert)           # 发帖时间
-    reference = scrapy.Field()      # 是否引用
-    content = scrapy.Field(output_processor=process_content)        # 帖子内容
-    praise_num = scrapy.Field(output_processor=get_praise_num)         # 点赞数
-    floor = scrapy.Field()            # 楼层
-    isTopic = scrapy.Field()          # 是否是主题帖
+    post_url = scrapy.Field()  # 主题帖url
+    author_name = scrapy.Field()  # 作者姓名
+    author_url = scrapy.Field(output_processor=url_bbs_join)  # 作者url
+    post_time = scrapy.Field(output_processor=datetime_convert)  # 发帖时间
+    reference = scrapy.Field()  # 是否引用
+    content = scrapy.Field(output_processor=process_content)  # 帖子内容
+    praise_num = scrapy.Field(output_processor=get_praise_num)  # 点赞数
+    floor = scrapy.Field()  # 楼层
+    isTopic = scrapy.Field()  # 是否是主题帖
 
     def get_insert_sql(self):
         insert_sql = """
             insert into comment(post_url, author_name, author_url, post_time, reference, content, praise_num, floor, isTopic) 
             VALUES (%s, %s, %s, %s,%s,%s, %s, %s, %s)
         """
-        params = (self['post_url'], self['author_name'],self['author_url'],self['post_time'],
-                  self['reference'],self['content'],self['praise_num'],self['floor'], self['isTopic'])
+        params = (self['post_url'], self['author_name'], self['author_url'], self['post_time'],
+                  self['reference'], self['content'], self['praise_num'], self['floor'], self['isTopic'])
         return insert_sql, params
 
 
 def get_listener(value):
-    return int(re.search('听众:(\d+)',value[0]).group(1))
+    return int(re.search('听众:(\d+)', value[0]).group(1))
 
 
 def get_red_flower(value):
-    return int(re.search('红花:(\d+)',value[0]).group(1))
+    return int(re.search('红花:(\d+)', value[0]).group(1))
 
 
 class LwwUserItem(scrapy.Item):
@@ -168,13 +178,13 @@ class LwwUserItem(scrapy.Item):
     user_url = scrapy.Field()
     listener = scrapy.Field(output_processor=get_listener)
     red_flower = scrapy.Field(output_processor=get_red_flower)
-    register_time = scrapy.Field()
+    register_time = scrapy.Field(input_processor=datetime_convert)
     last_active_time = scrapy.Field(input_processor=datetime_convert)
     last_post_time = scrapy.Field(input_processor=datetime_convert)
     serial_num = scrapy.Field()
-    group = scrapy.Field()
+    user_group = scrapy.Field()
     help = scrapy.Field(input_processor=MapCompose(int))
-    vip = scrapy.Field(input_processor=MapCompose(int))
+    vip = scrapy.Field(input_processor=MapCompose(float))
     gold = scrapy.Field(input_processor=MapCompose(float))
     spend = scrapy.Field(input_processor=MapCompose(int))
     soft = scrapy.Field(input_processor=MapCompose(int))
@@ -183,19 +193,21 @@ class LwwUserItem(scrapy.Item):
     online = scrapy.Field()
     online_status = scrapy.Field()
     major = scrapy.Field()
-    gender = scrapy.Field(input_processor=MapCompose(int))
+    gender = scrapy.Field()
     region = scrapy.Field()
     birthday = scrapy.Field()
 
     def get_insert_sql(self):
         insert_sql = """
-            INSERT INTO users(user_name, user_url, listener,red_flower,register_time,last_active_time,last_post_time, serial_num,
-                group, help, vip,gold,spend,soft,posts,rule,online,online_status,major,gender,region,birthday
-            ) VALUES (%s, %s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO users(user_name, user_url, listener,red_flower,register_time,last_active_time,last_post_time, serial_num, user_group, help, vip,gold,spend,soft,posts,rule,online,online_status,major,gender,region,birthday
+            ) VALUES (%s, %s, %s, %s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s)
         """
         params = (
-            self.user_name,self.user_url,self.listener,self.red_flower,self.register_time,self.last_active_time,self.last_post_time,
-            self.serial_num,self.group,self.help,self.vip,self.gold,self.spend,self.soft,self.posts,self.urle,self.online,self.online_status,
-            self.major,self.gender,self.region,self.birthday
+            self['user_name'], self['user_url'], self['listener'], self['red_flower'], self['register_time'],
+            self['last_active_time'], self['last_post_time'],
+            self['serial_num'], self['user_group'], self['help'], self['vip'], self['gold'], self['spend'],
+            self['soft'],
+            self['posts'], self['rule'], self['online'],
+            self['online_status'], self['major'], self['gender'], self['region'], self['birthday']
         )
         return insert_sql, params

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for lww project
+# Scrapy settings for xiaomuchong project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,10 +9,10 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'lww'
+BOT_NAME = 'xiaomuchong'
 
-SPIDER_MODULES = ['lww.spiders']
-NEWSPIDER_MODULE = 'lww.spiders'
+SPIDER_MODULES = ['xiaomuchong.spiders']
+NEWSPIDER_MODULE = 'xiaomuchong.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
@@ -48,27 +48,27 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'lww.middlewares.LwwSpiderMiddleware': 543,
+#    'xiaomuchong.middlewares.LwwSpiderMiddleware': 543,
 # }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'lww.middlewares.LwwDownloaderMiddleware': 543,
+   'xiaomuchong.middlewares.LwwDownloaderMiddleware': 543,
 }
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-EXTENSIONS = {
+# EXTENSIONS = {
    # 'scrapy.extensions.telnet.TelnetConsole': None,
-    'lww.extensions.MyExtension': 200,
-}
+   #  'xiaomuchong.extensions.MyExtension': 200,
+# }
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    # 'lww.pipelines.LwwPipeline': 300,
-    'lww.pipelines.PostgresSQLPipeline': 300,
+    # 'xiaomuchong.pipelines.LwwPipeline': 300,
+    'xiaomuchong.pipelines.PostgresSQLPipeline': 300,
     # 'scrapy_redis_bloomfilter.pipelines.RedisPipeline': 400,
 }
 
@@ -115,7 +115,7 @@ DATABASE_ENGINE = 'postgresql://postgres:0000@127.0.0.1:5432/xiaomuchong'
 
 # #################################### scrapy实现redis缓存去重 ############################################
 # 方式一：修改DUPEFILTER_CLASS
-# DUPEFILTER_CLASS = "lww.dupeFilter.RedisFilter"
+# DUPEFILTER_CLASS = "xiaomuchong.dupeFilter.RedisFilter"
 
 # 方式二： 利用scrapy_redis实现去重，缺点：无法修改key
 # 默认的redis配置  127.0.0.1 6379 若相同，则可以不配置
@@ -131,7 +131,7 @@ DATABASE_ENGINE = 'postgresql://postgres:0000@127.0.0.1:5432/xiaomuchong'
 # REDIS_PORT = 6379                                   # 端口
 # REDIS_PARAMS  = {'password':'0000'}                 # Redis连接参数             默认：REDIS_PARAMS = {'socket_timeout': 30,'socket_connect_timeout': 30,'retry_on_timeout': True,'encoding': REDIS_ENCODING,}）
 # REDIS_ENCODING = "utf-8"
-# DUPEFILTER_CLASS ='lww.dupeFilter.RedisDupeFilter'
+# DUPEFILTER_CLASS ='xiaomuchong.dupeFilter.RedisDupeFilter'
 
 # 方式四： 修改调度器
 REDIS_HOST = '127.0.0.1'                            # 主机名
@@ -141,7 +141,7 @@ REDIS_ENCODING = "utf-8"
 
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # DUPEFILTER_CLASS ='scrapy_redis.dupefilter.RFPDupeFilter'
-DUPEFILTER_CLASS ='lww.dupeFilter.RedisDupeFilter'
+DUPEFILTER_CLASS ='xiaomuchong.dupeFilter.RedisDupeFilter'
 # DEPTH_PRIORITY = 1  # 广度优先
 # DEPTH_PRIORITY = -1 # 深度优先
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.PriorityQueue'  # 默认使用优先级队列（默认），其他：PriorityQueue（有序集合），FifoQueue（列表）、LifoQueue（列表）
